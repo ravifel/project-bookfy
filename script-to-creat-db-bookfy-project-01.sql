@@ -1,12 +1,3 @@
--- Database Creation Script
--- Database Name: bookfy-project-01
-
--- Step 1: Create the Database
-CREATE DATABASE bookfy-project-01;
-
--- Step 2: Connect to the Database
-\c bookfy-project-01;
-
 -- PostgreSQL database dump
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -18,20 +9,31 @@ SET client_min_messages = warning;
 SET default_tablespace = '';
 SET default_with_oids = false;
 
---- Step 3: drop tables if exists
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS address;
-DROP TABLE IF EXISTS store;
+-- Step 3: drop tables if exists
+DROP TABLE IF EXISTS transaction_log;
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS cart;
+DROP TABLE IF EXISTS credit_card;
+DROP TABLE IF EXISTS subscriptions;
+DROP TABLE IF EXISTS services;
 DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS category;
+DROP TABLE IF EXISTS store;
 DROP TABLE IF EXISTS subcategory;
+DROP TABLE IF EXISTS category;
+DROP TABLE IF EXISTS address;
+DROP TABLE IF EXISTS users;
+
 
 -- Step 4: Create main tables
 
 -- Table: category
 CREATE TABLE category (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(50)
+    name VARCHAR(50),
+    description VARCHAR
 );
 
 -- Table: subcategory
@@ -51,7 +53,8 @@ CREATE TABLE users (
     birthday DATE,
     password VARCHAR,
     user_type VARCHAR(20),
-    profile_picture VARCHAR
+    profile_picture VARCHAR,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table: address
@@ -62,7 +65,8 @@ CREATE TABLE address (
     city VARCHAR,
     state VARCHAR(50),
     zip_code VARCHAR(10),
-    user_id INTEGER REFERENCES users(id)
+    user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table: store
@@ -71,7 +75,8 @@ CREATE TABLE store (
     name VARCHAR(100),
     biography TEXT,
     profile_picture VARCHAR,
-    user_id INTEGER REFERENCES users(id)
+    user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Table: products
@@ -79,57 +84,205 @@ CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
     price NUMERIC(10,2),
+    stock_quantity INT,
     description TEXT,
     sub_category_id INTEGER REFERENCES subcategory(id),
-    store_id INTEGER REFERENCES store(id)
+    store_id INTEGER REFERENCES store(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Inserting Data into Tables
+CREATE TABLE cart (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- Data for the users table
-INSERT INTO users (name, cpf, email, telephone, birthday, password, user_type, profile_picture) VALUES
-('Oliver Jackson', '12345678901', 'oliver.jackson@example.co.uk', '+44 20 7946 0958', '1985-06-15', 'password123', 'admin', 'oliver.jpg'),
-('Amelia Wilson', '98765432100', 'amelia.wilson@example.co.uk', '+44 20 7946 0959', '1990-04-20', 'password456', 'seller', 'amelia.jpg'),
-('James Taylor', '19283746500', 'james.taylor@example.co.uk', '+44 20 7946 0960', '1995-12-10', 'password789', 'buyer', 'james.jpg'),
-('Isla Moore', '56473829100', 'isla.moore@example.co.uk', '+44 20 7946 0961', '1988-11-05', 'password321', 'buyer', 'isla.jpg'),
-('Emily Brown', '10293847560', 'emily.brown@example.co.uk', '+44 20 7946 0962', '1992-09-25', 'password654', 'seller', 'emily.jpg');
+CREATE TABLE cart_items (
+    id SERIAL PRIMARY KEY,
+    cart_id INTEGER REFERENCES cart(id),
+    product_id INTEGER REFERENCES products(id),
+    quantity INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- Data for the address table
-INSERT INTO address (street, district, city, state, zip_code, user_id) VALUES
-('10 Downing Street', 'Westminster', 'London', 'Greater London', 'SW1A 2AA', 1),
-('221B Baker Street', 'Marylebone', 'London', 'Greater London', 'NW1 6XE', 2),
-('30 St Mary Axe', 'City of London', 'London', 'Greater London', 'EC3A 8BF', 3),
-('1600 Penn Road', 'Reading', 'Reading', 'Berkshire', 'RG1 8AE', 4),
-('1 Infinite Loop', 'Cambridge', 'Cambridge', 'Cambridgeshire', 'CB2 1TN', 5);
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    total_price NUMERIC(10,2),
+    status VARCHAR(20),  -- "pending", "completed", "shipped", etc.
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- Data for the store table
-INSERT INTO store (name, biography, profile_picture, user_id) VALUES
-('Book Haven', 'Your destination for literary treasures.', 'book_haven.jpg', 1),
-('Readers Paradise', 'A paradise for book enthusiasts.', 'readers_paradise.jpg', 2),
-('Storytellers Hub', 'Where stories come to life.', 'storytellers_hub.jpg', 3),
-('Page Turners', 'Unveiling the magic of every page.', 'page_turners.jpg', 4),
-('Literary Escape', 'Escape into the world of books.', 'literary_escape.jpg', 5);
+CREATE TABLE order_items (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(id),
+    product_id INTEGER REFERENCES products(id),
+    quantity INT,
+    price NUMERIC(10,2)
+);
 
--- Data for the category table
-INSERT INTO category (name) VALUES
-('Fiction'),
-('Non-Fiction'),
-('Science'),
-('History'),
-('Children');
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    order_id INTEGER REFERENCES orders(id),
+    payment_method VARCHAR(50),  -- "credit_card", "debit_card", "pix", etc.
+    payment_status VARCHAR(20),  -- "pending", "paid", "failed"
+    amount NUMERIC(10,2),
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
--- Data for the subcategory table
+CREATE TABLE credit_card (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    card_number VARCHAR(20),
+    expiration_date DATE,
+    cardholder_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    description TEXT,
+    price NUMERIC(10,2)
+);
+
+CREATE TABLE subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    service_id INTEGER REFERENCES services(id),  -- Referência para o serviço ao qual o usuário está assinando
+    start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    end_date TIMESTAMP,
+    status VARCHAR(20)  -- "active", "inactive", "cancelled"
+);
+
+CREATE TABLE transaction_log (
+    id SERIAL PRIMARY KEY,
+    payment_id INTEGER REFERENCES payments(id),
+    transaction_type VARCHAR(50),  -- "charge", "refund", "dispute"
+    amount NUMERIC(10,2),
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Data Insertion
+
+-- Inserting into category
+INSERT INTO category (name, description) VALUES
+('Fiction', 'Novels and stories from various genres'),
+('Non-Fiction', 'Educational and informational books'),
+('Science', 'Books about scientific topics and discoveries'),
+('Fantasy', 'Books featuring magical and fantastical elements'),
+('Mystery', 'Thrilling stories with suspense and intrigue');
+
+-- Inserting into subcategory
 INSERT INTO subcategory (name, category_id) VALUES
-('Fantasy', 1),
-('Biography', 2),
+('Classic Literature', 1),
+('Biographies', 2),
 ('Physics', 3),
-('World Wars', 4),
-('Picture Books', 5);
+('Epic Fantasy', 4),
+('Detective Novels', 5);
 
--- Data for the products table
-INSERT INTO products (name, price, description, sub_category_id, store_id) VALUES
-('The Great Adventure', 15.99, 'An epic fantasy journey through mystical lands.', 1, 1),
-('Life of a Genius', 20.99, 'An inspiring biography of a world-renowned scientist.', 2, 2),
-('Quantum Mechanics Simplified', 35.50, 'A comprehensive guide to understanding quantum mechanics.', 3, 3),
-('The Second World War', 25.75, 'A detailed account of World War II.', 4, 4),
-('My First ABC', 10.99, 'A colorful picture book for young learners.', 5, 5);
+-- Inserting into users
+INSERT INTO users (name, cpf, email, telephone, birthday, password, user_type, profile_picture) VALUES
+('Arthur Clark', '12345678901', 'arthur.clark@example.com', '+44 20 7946 1111', '1978-02-15', 'password123', 'buyer', 'arthur_clark.jpg'),
+('Diana Evans', '23456789012', 'diana.evans@example.com', '+44 20 7946 1112', '1985-05-20', 'password456', 'seller', 'diana_evans.jpg'),
+('Edward Green', '34567890123', 'edward.green@example.com', '+44 20 7946 1113', '1990-08-25', 'password789', 'buyer', 'edward_green.jpg'),
+('Fiona Harris', '45678901234', 'fiona.harris@example.com', '+44 20 7946 1114', '1982-10-30', 'password321', 'admin', 'fiona_harris.jpg'),
+('George Martin', '56789012345', 'george.martin@example.com', '+44 20 7946 1115', '1995-12-10', 'password654', 'seller', 'george_martin.jpg');
+
+-- Inserting into address
+INSERT INTO address (street, district, city, state, zip_code, user_id) VALUES
+('10 Oxford Street', 'Westminster', 'London', 'Greater London', 'W1D 1NB', 1),
+('25 Piccadilly', 'Mayfair', 'London', 'Greater London', 'W1J 0BF', 2),
+('50 Kings Road', 'Chelsea', 'London', 'Greater London', 'SW3 4UD', 3),
+('75 Baker Street', 'Marylebone', 'London', 'Greater London', 'NW1 5RT', 4),
+('100 Fleet Street', 'City of London', 'London', 'Greater London', 'EC4A 2AE', 5);
+
+-- Inserting into store
+INSERT INTO store (name, biography, profile_picture, user_id) VALUES
+('Classic Reads', 'A collection of timeless literary classics.', 'classic_reads.jpg', 2),
+('Biographical Corner', 'Explore the lives of extraordinary individuals.', 'biographical_corner.jpg', 5),
+('Scientific Insights', 'Your source for science and discovery.', 'scientific_insights.jpg', 4),
+('Fantasy Worlds', 'Dive into magical and epic adventures.', 'fantasy_worlds.jpg', 2),
+('Mystery Haven', 'Suspenseful tales to keep you on edge.', 'mystery_haven.jpg', 5);
+
+-- Inserting into products
+INSERT INTO products (name, price, stock_quantity, description, sub_category_id, store_id) VALUES
+('Pride and Prejudice', 9.99, 50, 'A classic romance novel by Jane Austen.', 1, 1),
+('The Diary of Anne Frank', 14.99, 40, 'A touching account of a young girls life during WWII.', 2, 2),
+('A Brief History of Time', 19.99, 30, 'Stephen Hawkings exploration of the universe.', 3, 3),
+('The Hobbit', 12.99, 25, 'J.R.R. Tolkiens prelude to The Lord of the Rings.', 4, 4),
+('Sherlock Holmes: The Complete Stories', 24.99, 20, 'Arthur Conan Doyles iconic detective tales.', 5, 5);
+
+-- Inserting into cart
+INSERT INTO cart (user_id) VALUES
+(1),
+(2),
+(3),
+(4),
+(5);
+
+-- Inserting into cart_items
+INSERT INTO cart_items (cart_id, product_id, quantity) VALUES
+(1, 1, 2),
+(1, 3, 1),
+(2, 2, 1),
+(3, 5, 1),
+(4, 4, 1);
+
+-- Inserting into orders
+INSERT INTO orders (user_id, total_price, status) VALUES
+(1, 29.97, 'completed'),
+(2, 14.99, 'pending'),
+(3, 24.99, 'completed'),
+(4, 12.99, 'shipped'),
+(5, 19.99, 'completed');
+
+-- Inserting into order_items
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+(1, 1, 2, 9.99),
+(1, 3, 1, 19.99),
+(2, 2, 1, 14.99),
+(3, 5, 1, 24.99),
+(4, 4, 1, 12.99);
+
+-- Inserting into payments
+INSERT INTO payments (order_id, payment_method, payment_status, amount) VALUES
+(1, 'credit_card', 'paid', 29.97),
+(2, 'paypal', 'pending', 14.99),
+(3, 'debit_card', 'paid', 24.99),
+(4, 'credit_card', 'paid', 12.99),
+(5, 'paypal', 'paid', 19.99);
+
+-- Inserting into credit_card
+INSERT INTO credit_card (user_id, card_number, expiration_date, cardholder_name) VALUES
+(1, '1111222233334444', '2025-05-01', 'Arthur Clark'),
+(2, '5555666677778888', '2026-07-01', 'Diana Evans'),
+(3, '9999000011112222', '2024-11-01', 'Edward Green'),
+(4, '3333444455556666', '2025-12-01', 'Fiona Harris'),
+(5, '7777888899990000', '2026-03-01', 'George Martin');
+
+-- Inserting into services
+INSERT INTO services (name, description, price) VALUES
+('Monthly Classics', 'Access to a new classic book every month.', 9.99),
+('Biography Bundle', 'Weekly biographies delivered to your inbox.', 14.99),
+('Science Starter Pack', 'A selection of popular science books.', 19.99),
+('Fantasy Favourites', 'Handpicked epic fantasy novels.', 12.99),
+('Mystery Masterpieces', 'The best of detective and mystery fiction.', 24.99);
+
+-- Inserting into subscriptions
+INSERT INTO subscriptions (user_id, service_id, start_date, end_date, status) VALUES
+(1, 1, '2024-01-01', '2024-12-31', 'active'),
+(2, 2, '2024-02-01', '2024-11-30', 'active'),
+(3, 3, '2024-03-01', '2024-09-30', 'inactive'),
+(4, 4, '2024-04-01', '2024-10-31', 'cancelled'),
+(5, 5, '2024-05-01', '2024-12-31', 'active');
+
+-- Inserting into transaction_log
+INSERT INTO transaction_log (payment_id, transaction_type, amount) VALUES
+(1, 'charge', 29.97),
+(2, 'charge', 14.99),
+(3, 'charge', 24.99),
+(4, 'charge', 12.99),
+(5, 'charge', 19.99);
