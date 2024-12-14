@@ -25,6 +25,11 @@ DROP TABLE IF EXISTS subcategory;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS address;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS product_reviews;
+DROP TABLE IF EXISTS store_reviews;
+DROP TABLE IF EXISTS product_comments;
+DROP TABLE IF EXISTS store_comments;
+DROP TABLE IF EXISTS likes;
 
 
 -- Step 4: Create main tables
@@ -164,6 +169,58 @@ CREATE TABLE transaction_log (
     transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table: product_reviews
+CREATE TABLE product_reviews (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products(id),
+    user_id INTEGER REFERENCES users(id),
+    rating NUMERIC(2,1) CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: store_reviews
+CREATE TABLE store_reviews (
+    id SERIAL PRIMARY KEY,
+    store_id INTEGER REFERENCES store(id),
+    user_id INTEGER REFERENCES users(id),
+    rating NUMERIC(2,1) CHECK (rating >= 1 AND rating <= 5),
+    review_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: product_comments
+CREATE TABLE product_comments (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER REFERENCES products(id),
+    user_id INTEGER REFERENCES users(id),
+    comment_text TEXT,
+    parent_comment_id INTEGER REFERENCES product_comments(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: store_comments
+CREATE TABLE store_comments (
+    id SERIAL PRIMARY KEY,
+    store_id INTEGER REFERENCES store(id),
+    user_id INTEGER REFERENCES users(id),
+    comment_text TEXT,
+    parent_comment_id INTEGER REFERENCES store_comments(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: likes
+CREATE TABLE likes (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    entity_type VARCHAR(20) CHECK (entity_type IN ('product_review', 'store_review', 'product_comment', 'store_comment')),
+    entity_id INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
+
 
 -- Data Insertion
 
@@ -286,3 +343,43 @@ INSERT INTO transaction_log (payment_id, transaction_type, amount) VALUES
 (3, 'charge', 24.99),
 (4, 'charge', 12.99),
 (5, 'charge', 19.99);
+
+-- Inserting into product_reviews
+INSERT INTO product_reviews (product_id, user_id, rating, review_text) VALUES
+(1, 1, 4.5, 'An insightful and well-written book.'),
+(2, 2, 5.0, 'Absolutely inspiring! Highly recommend.'),
+(3, 3, 3.5, 'Interesting read, but a bit complex.'),
+(4, 4, 4.0, 'Enjoyable and engaging storyline.'),
+(5, 5, 5.0, 'A masterpiece of detective fiction.');
+
+-- Inserting into store_reviews
+INSERT INTO store_reviews (store_id, user_id, rating, review_text) VALUES
+(1, 2, 4.0, 'A great collection of books and excellent service.'),
+(2, 3, 5.0, 'Impressive store with a unique selection.'),
+(3, 4, 3.5, 'Good store but could use more variety.'),
+(4, 5, 4.5, 'Loved the theme and the organization of the store.'),
+(5, 1, 5.0, 'Fantastic store with an amazing atmosphere.');
+
+-- Inserting into product_comments
+INSERT INTO product_comments (product_id, user_id, comment_text, parent_comment_id) VALUES
+(1, 1, 'This book really changed my perspective.', NULL),
+(1, 2, 'I agree, it is a fantastic read.', 1),
+(2, 3, 'Very inspiring story. Everyone should read it.', NULL),
+(3, 4, 'I found some parts hard to understand, but overall good.', NULL),
+(4, 5, 'A classic that everyone should experience.', NULL);
+
+-- Inserting into store_comments
+INSERT INTO store_comments (store_id, user_id, comment_text, parent_comment_id) VALUES
+(1, 1, 'Great store with a wonderful selection of classics.', NULL),
+(1, 2, 'Thanks for the feedback! We are glad you enjoyed it.', 1),
+(2, 3, 'I love the biographies they offer here.', NULL),
+(3, 4, 'Could use better organization, but the books are good.', NULL),
+(5, 5, 'The mystery section is top-notch!', NULL);
+
+-- Inserting into likes
+INSERT INTO likes (user_id, entity_type, entity_id) VALUES
+(1, 'product_review', 1),
+(2, 'store_review', 1),
+(3, 'product_comment', 1),
+(4, 'store_comment', 2),
+(5, 'product_review', 5);
