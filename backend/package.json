@@ -1,0 +1,17 @@
+{
+  "name": "bookfy_project_backend",
+  "version": "1.0.0",
+  "description": "This system is an online book store where users can advertise books they want to sell, so that other users of the platform can buy them. It connects sellers and buyers of new and used books to do business with each other.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "book",
+    "sale",
+    "online",
+    "store"
+  ],
+  "author": "Ravi <ravifelipee@gmail.com>",
+  "license": "MIT"
+}
