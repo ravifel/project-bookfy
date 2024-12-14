@@ -1,0 +1,4 @@
+backend/_logs/
+backend/node_modules/
+backend/_cacache/
+backend/_update-notifier-last-checked
