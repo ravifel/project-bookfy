@@ -150,7 +150,7 @@ CREATE TABLE services (
 CREATE TABLE subscriptions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    service_id INTEGER REFERENCES services(id),  -- Referência para o serviço ao qual o usuário está assinando
+    service_id INTEGER REFERENCES services(id),  -- Reference to the service the user is subscribing to
     start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_date TIMESTAMP,
     status VARCHAR(20)  -- "active", "inactive", "cancelled"
