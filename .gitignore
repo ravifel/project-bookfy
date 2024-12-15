@@ -3,3 +3,6 @@ backend/node_modules/
 backend/_cacache/
 backend/_update-notifier-last-checked
 backend/db/.env
+_logs/
+_cacache/
+_update-notifier-last-checked
