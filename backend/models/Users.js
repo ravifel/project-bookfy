@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const db = require('../config/database');
 
-const Users = db.define('user', {
+const Users = db.define('users', {
     name: {
         type: Sequelize.STRING
     },
@@ -30,7 +30,7 @@ const Users = db.define('user', {
         type: Sequelize.DATE
     }
 }, {
-    timestamps: false // Desativa timestamps automáticos
+    timestamps: true // Mantém os timestamps
 });
 
 module.exports = Users;
