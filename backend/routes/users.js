@@ -9,6 +9,10 @@ router.get('/', (request, response) =>
             console.log(users);
             response.sendStatus(200);
         })
-        .catch(err => console.log(err)));
+        .catch(err => console.log(err)
+        ));
+
+
+//router.get('/', (req, res) => res.send("Testando Testando"));
 
 module.exports = router;

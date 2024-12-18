@@ -19,6 +19,7 @@ app.get('/', (request, response) => {
 
 // Users routes
 app.use('/users', require('./routes/users'));
+//app.use('/users', (request, response) => { response.send("Route '/users' is working...") });
 
 app.listen(PORT, function () {
     console.log(`O express está rodando na porta ${PORT}`);
