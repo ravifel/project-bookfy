@@ -2,7 +2,8 @@ backend/_logs/
 backend/node_modules/
 backend/_cacache/
 backend/_update-notifier-last-checked
-backend/db/.env
+backend/config/.env
+backend/.env
 _logs/
 _cacache/
 _update-notifier-last-checked
