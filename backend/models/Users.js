@@ -28,6 +28,9 @@ const Users = db.define('users', {
     },
     createdAt: {
         type: Sequelize.DATE
+    },
+    updatedAt: {
+        type: Sequelize.DATE
     }
 }, {
     timestamps: true // Mantém os timestamps
