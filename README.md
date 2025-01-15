@@ -12,6 +12,4 @@ npm install --save-dev sequelize-cli
 npm install nodemon -D
 npm install moment
 
-
-
 npx sequelize-cli init

@@ -19,6 +19,7 @@ router.get('/', (request, response) =>
         ));
 
 // Get user by 'id'
+// Waiting for the implementation
 
 // Add a user
 router.get('/add', (request, response) => {
@@ -59,18 +60,17 @@ router.get('/add', (request, response) => {
         .catch(err => console.log(err));
 });
 
-
 // Updating User
 router.get('/update/:id', (request, response) => {
     const data = {
-        name: 'Thales tESTE 123',
-        cpf: '20427978799',
-        email: 'thalesteste123@transtelli.com.br',
-        telephone: '2128900795',
-        birthday: moment('02/04/1984', 'DD/MM/YYYY').format('YYYY-MM-DD'),
-        password: 'X65o1U7dXa',
-        user_type: 'seller',
-        profile_picture: 'thales-porto.jpg'
+        name: 'Marcel McElroy',
+        cpf: '71013103203',
+        email: 'marcelmcelroy@mcelroy.com.br',
+        telephone: '639427635',
+        birthday: moment('01/01/1949', 'DD/MM/YYYY').format('YYYY-MM-DD'),
+        password: ']hmh3E9=qL2',
+        user_type: 'buyer',
+        profile_picture: 'marcel-mcelroy.jpg'
     }
 
     let {
@@ -84,7 +84,9 @@ router.get('/update/:id', (request, response) => {
         profile_picture
     } = data;
 
-    // Insert into table
+    const userId = request.params.id; // Getting the ID from the URL
+
+    // Update in table
     Users.update({
         name,
         cpf,
@@ -94,11 +96,14 @@ router.get('/update/:id', (request, response) => {
         password,
         user_type,
         profile_picture
+    }, {
+        where: { id: userId } // Specifying the record to be updated
     })
-        .then(user => response.redirect('/users'))
+        .then(() => response.redirect('/users'))
         .catch(err => console.log(err));
 });
 
 // Delete User
+// Waiting for the implementation
 
 module.exports = router;
